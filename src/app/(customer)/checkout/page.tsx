@@ -126,7 +126,7 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          <div className="bg-brand/5 border border-brand/20 rounded-2xl p-4 text-sm">
+          <div className="bg-brand/5 border-2 border-brand/30 rounded-2xl p-4 text-sm">
             <p className="font-semibold text-brand mb-1">💳 Payment Instructions</p>
             <p className="text-muted-foreground">
               After placing your order, send payment via MoMo to{" "}

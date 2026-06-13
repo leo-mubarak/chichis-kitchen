@@ -3,10 +3,94 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { CheckCircle, Loader2, Phone, Clock } from "lucide-react";
+import { CheckCircle, Loader2, Phone, Clock, Copy, Check } from "lucide-react";
 import { formatCurrency, formatDate, getStatusLabel, getStatusColor } from "@/lib/utils";
 import { OrderWithDetails } from "@/types";
 import { Suspense } from "react";
+import toast from "react-hot-toast";
+
+const MOMO_NUMBER = "055-302-6652";
+
+function CopyMoMoButton({ amount }: { amount: number }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(MOMO_NUMBER.replace(/-/g, ""));
+    setCopied(true);
+    toast.success("MoMo number copied!");
+    setTimeout(() => setCopied(false), 3000);
+  };
+
+  return (
+    <div className="bg-brand rounded-2xl p-5 text-white text-left mb-8 shadow-lg">
+      {/* Header */}
+      <div className="flex items-center gap-2 mb-3">
+        <span className="text-2xl">💳</span>
+        <h3 className="font-bold text-lg">Make Payment to Process Your Order</h3>
+      </div>
+
+      <p className="text-brand-100 text-sm mb-4">
+        Send{" "}
+        <strong className="text-white text-base">
+          {formatCurrency(amount)}
+        </strong>{" "}
+        via MTN Mobile Money to complete your order:
+      </p>
+
+      {/* MoMo number highlight box */}
+      <div className="bg-white/15 border-2 border-white/40 rounded-xl p-4 flex items-center justify-between gap-3 mb-4">
+        <div>
+          <p className="text-white/70 text-xs font-medium uppercase tracking-wide mb-1">
+            MTN MoMo Number
+          </p>
+          <p className="text-white text-3xl font-extrabold tracking-widest">
+            {MOMO_NUMBER}
+          </p>
+        </div>
+        <button
+          onClick={handleCopy}
+          className={`flex-shrink-0 flex flex-col items-center gap-1 px-4 py-3 rounded-xl font-bold text-sm transition-all ${
+            copied
+              ? "bg-green-500 text-white"
+              : "bg-white text-brand hover:bg-brand-50"
+          }`}
+        >
+          {copied ? (
+            <>
+              <Check className="w-5 h-5" />
+              <span>Copied!</span>
+            </>
+          ) : (
+            <>
+              <Copy className="w-5 h-5" />
+              <span>Copy</span>
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Steps */}
+      <div className="space-y-2 text-sm text-white/80">
+        <div className="flex items-start gap-2">
+          <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">1</span>
+          <span>Copy the MoMo number above</span>
+        </div>
+        <div className="flex items-start gap-2">
+          <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">2</span>
+          <span>Send <strong className="text-white">{formatCurrency(amount)}</strong> via MTN Mobile Money</span>
+        </div>
+        <div className="flex items-start gap-2">
+          <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">3</span>
+          <span>Use your name as the reference</span>
+        </div>
+        <div className="flex items-start gap-2">
+          <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">4</span>
+          <span>We&apos;ll confirm and start preparing your order!</span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function OrderConfirmationContent() {
   const params = useSearchParams();
@@ -48,12 +132,16 @@ function OrderConfirmationContent() {
         <CheckCircle className="w-10 h-10 text-green-600" />
       </div>
 
-      <h1 className="text-3xl font-bold mb-2">Order Placed!</h1>
+      <h1 className="text-3xl font-bold mb-2">Order Placed! 🎉</h1>
       <p className="text-muted-foreground mb-8">
         Thank you, <strong>{order.customer.fullname}</strong>! Your order has
-        been received and will be prepared shortly.
+        been received. Complete your payment below to get it processed.
       </p>
 
+      {/* Payment section - shown prominently first */}
+      <CopyMoMoButton amount={order.totalAmount} />
+
+      {/* Order summary */}
       <div className="bg-card border border-border rounded-2xl p-6 text-left mb-6">
         <div className="flex justify-between items-start mb-4">
           <div>
@@ -85,18 +173,6 @@ function OrderConfirmationContent() {
           <p><span className="text-muted-foreground">Deliver to:</span> {order.deliveryAddress}</p>
           <p><span className="text-muted-foreground">Ordered:</span> {formatDate(order.createdAt)}</p>
         </div>
-      </div>
-
-      <div className="bg-brand/5 border border-brand/20 rounded-2xl p-5 text-left mb-8">
-        <h3 className="font-bold text-brand mb-3">💳 Complete your payment</h3>
-        <p className="text-sm text-muted-foreground mb-2">
-          Send <strong className="text-foreground">{formatCurrency(order.totalAmount)}</strong> via
-          MTN Mobile Money to:
-        </p>
-        <div className="text-2xl font-bold text-foreground mb-1">055-302-6652</div>
-        <p className="text-xs text-muted-foreground">
-          Use your name or order ID as the reference. We&apos;ll confirm and start preparing!
-        </p>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
