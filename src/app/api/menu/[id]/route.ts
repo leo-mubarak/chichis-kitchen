@@ -4,11 +4,12 @@ import { auth } from "@/lib/auth";
 
 export async function GET(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const item = await prisma.menuItem.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { sizes: true },
     });
     if (!item) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -20,20 +21,17 @@ export async function GET(
 
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
+    const { id } = await params;
     const body = await req.json();
     const { name, description, image, category, sizes } = body;
 
-    // Delete old sizes and replace
-    await prisma.menuSize.deleteMany({ where: { menuItemId: params.id } });
+    await prisma.menuSize.deleteMany({ where: { menuItemId: id } });
 
     const item = await prisma.menuItem.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name,
         description,
@@ -52,13 +50,11 @@ export async function PUT(
 
 export async function DELETE(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    await prisma.menuItem.delete({ where: { id: params.id } });
+    const { id } = await params;
+    await prisma.menuItem.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ error: "Failed to delete item" }, { status: 500 });
